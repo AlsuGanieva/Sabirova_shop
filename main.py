@@ -10,4 +10,4 @@ for row in range(1, sheet.max_row):
                       sheet['E' + str(row)].value, sheet['G' + str(row)].value, sheet['H' + str(row)].value])
 
 result_wb.save("my_book.xlsx")
-book.close()
+book.close()\\\\\
