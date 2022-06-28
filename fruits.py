@@ -64,9 +64,8 @@ def generate_unformatted_sheet(rows, title, file_name, percent):
 
 
 def read_data(input_worksheet, row_number):
-    read_row = 3
     rows = []
-    while input_worksheet.cell(read_row, 1).value:
+    for read_row in range(3, input_worksheet.max_row + 1):
         count = input_worksheet.cell(read_row, row_number).value
         cost = input_worksheet.cell(read_row, 6).value
         if count and cost:
@@ -74,7 +73,6 @@ def read_data(input_worksheet, row_number):
                          input_worksheet.cell(read_row, 2).value,
                          count,
                          cost])
-        read_row += 1
     return rows
 
 
