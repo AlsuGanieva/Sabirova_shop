@@ -1,0 +1,6 @@
+*.xlsx
+*.xls
+venv
+venv/*
+.idea
+.idea/*
