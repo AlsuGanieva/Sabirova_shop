@@ -74,22 +74,17 @@ def calculate_result(one_c_rows, candy_rows):
     likes = 0
     news = 0
     for candy_row in candy_rows:
-        results = process.extractBests(candy_row, one_c_rows, processor=one_c_row_tuple_processor,
-                                       scorer=fuzz.token_sort_ratio, score_cutoff=0)
-        found = False
-        for result in results:
-            if result[0][0] == candy_row[0]:
-                found = True
-                # print("{} -> {} | {} IDENTICAL".format(result[0][1], candy_row[1], result[1]))
-                identicals += 1
-                break
-        if not found:
-            if len(results) > 0:
-                print("{} -> {} | {} LIKE".format(results[0][0][1], candy_row[1], results[0][1]))
-                likes += 1
-            else:
-                print("NOT EXIST -> {} NOT EXIST".format(candy_row[1]))
-                news += 1
+        result = process.extractOne(candy_row, one_c_rows, processor=one_c_row_tuple_processor,
+                                    scorer=fuzz.token_sort_ratio, score_cutoff=80)
+        if result and result[0][0] == candy_row[0]:
+            print("{} -> {} | {} IDENTICAL".format(result[0][1], candy_row[1], result[1]))
+            identicals += 1
+        elif result:
+            print("{} -> {} | {} LIKE".format(result[0][1], candy_row[1], result[1]))
+            likes += 1
+        else:
+            print("NOT EXIST -> {} NOT EXIST".format(candy_row[1]))
+            news += 1
     print("IDENTICALS:{} | LIKES:{} | NEW ONES:{}".format(identicals, likes, news))
 
 
