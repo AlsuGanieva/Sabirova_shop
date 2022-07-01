@@ -2,11 +2,12 @@ from openpyxl import load_workbook
 from openpyxl import Workbook
 from openpyxl.styles import (Alignment, Font, Border, Side)
 from openpyxl.worksheet.page import PageMargins
+import re
 
 book = load_workbook('sweets.xlsx')
-sheet = book.active  # берем 1 лист активный
+sheet_1 = book.active  # берем 1 лист активный
 result_wb = Workbook()  # создаем рабочую книгу result_wb
-result_ws = result_wb.active  # берем 1 лист
+result_ws = result_wb.worksheets[0]  # берем 1 лист
 result_ws.title = 'Кондитерка'  # название 1 листа
 name_cons_note = 'НАКЛАДНАЯ НА КОНДИТЕРКУ "НАДЕЖДА"'  # название накладной
 
@@ -20,9 +21,9 @@ def column_names():
 
 column_names()
 
-for row in range(2, sheet.max_row):
-    result_ws.append([row-1, sheet['D' + str(row)].value, sheet['E' + str(row)].value, sheet['F' + str(row)].value,
-                      sheet['G' + str(row)].value, sheet['H' + str(row)].value])
+for row in range(2, sheet_1.max_row):
+    result_ws.append([row-1, sheet_1['D' + str(row)].value, sheet_1['E' + str(row)].value, sheet_1['F' + str(row)].value,
+                      sheet_1['G' + str(row)].value, sheet_1['H' + str(row)].value])
 
 thins = Side(border_style="thick", color="FF000000")  # жирный шрифт
 double = Side(border_style="thin", color="FF000000")  # средний шрифт
@@ -46,10 +47,11 @@ def text_alignment():  # функция выравнивания текста
     result_ws.column_dimensions['A'].width = 3  # изменяю ширину 1 колонки
 
     for row in range(3, result_ws.max_row+1):  # перенос текста, если не помещается
+        result_ws[row][1].alignment = Alignment(horizontal='general', vertical="center")
         result_ws[row][4].font = Font(bold=True, size=14)  # жирный шрифт, размер шрифта 14
         if len(str(result_ws[row][1].value)) > 50:
             result_ws.row_dimensions[row].height = 40
-            result_ws[row][1].alignment = Alignment(wrapText=True, vertical="center")
+            result_ws[row][1].alignment = Alignment(wrapText=True, horizontal='general', vertical="center")
 
     for cell in range(6):  # центрирование названия колонок
         result_ws[2][cell].alignment = Alignment(horizontal="center", vertical="center")
@@ -83,6 +85,44 @@ def summary_output():  # функция подсчета итоговых сум
 markup_calculation()  # вызов функции расчета наценки на кондитерку
 text_alignment()  # вызов функции выравнивания текста
 summary_output()  # вызов функции подсчета итогов
+
+
+# работа с колбасой 7 склад
+
+book_2 = load_workbook('sausage7.xlsx')
+sheet_2 = book_2.worksheets[2]  # берем 1 лист активный
+result_wb.create_sheet(title = 'Колбаса', index = 1)  # Добавить новый лист в Excel
+result_ws = result_wb.worksheets[1]  # берем 1 лист
+name_cons_note = 'НАКЛАДНАЯ НА КОЛБАСУ "НАДЕЖДА"'  # название накладной
+
+column_names()
+
+for row in range(3, sheet_2.max_row+1):
+    result_ws.append([row-2, sheet_2['A' + str(row)].value, sheet_2['B' + str(row)].value, '',
+                      sheet_2['C' + str(row)].value, sheet_2['D' + str(row)].value])
+
+book_3 = load_workbook('sausage75.xlsx')
+sheet_3 = book_3.worksheets[0]  # берем 1 лист активный
+
+
+def strip_value(string):
+    if len(string) > 0:
+        result = re.sub(r"['\s]",'', string)
+        return float(result)
+    else:
+        return None
+
+for row in range(result_ws.max_row+1, sheet_3.max_row-9):
+    result_ws.append([result_ws.max_row+1, sheet_3['B' + str(row)].value, strip_value(sheet_3['D' + str(row)].value),
+                      sheet_3['F' + str(row)].value, strip_value(sheet_3['C' + str(row)].value),
+                      strip_value(sheet_3['G' + str(row)].value)])
+
+
+
+markup_calculation()  # вызов функции расчета наценки
+text_alignment()  # вызов функции выравнивания текста
+summary_output()  # вызов функции подсчета итогов
+
 
 result_wb.save("my_book.xlsx")
 book.close()
