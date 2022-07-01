@@ -3,13 +3,14 @@ from openpyxl import Workbook
 from openpyxl.styles import (Alignment, Font, Border, Side)
 from openpyxl.worksheet.page import PageMargins
 import re
+import datetime
 
 book = load_workbook('sweets.xlsx')
 sheet_1 = book.active  # берем 1 лист активный
 result_wb = Workbook()  # создаем рабочую книгу result_wb
 result_ws = result_wb.worksheets[0]  # берем 1 лист
 result_ws.title = 'Кондитерка'  # название 1 листа
-name_cons_note = 'НАКЛАДНАЯ НА КОНДИТЕРКУ "НАДЕЖДА"'  # название накладной
+name_cons_note = 'НАКЛАДНАЯ на КОНДИТЕРКУ "НАДЕЖДА" от '  # название накладной
 
 
 def column_names():
@@ -37,6 +38,14 @@ def markup_calculation():  # функция расчета наценки на �
         result_ws[row][4].value = round(1.27 * result_ws[row][4].value)  # процент
 
 
+# дата
+def it_is_today_data():
+    result_ws['G1'] = datetime.date.today()
+    result_ws['G1'].number_format = 'D MMM YYYY'
+    today_data = str(result_ws['G1'].value)
+    del result_ws['G1']
+    return today_data
+
 def text_alignment():  # функция выравнивания текста
     result_ws.page_setup.orientation = 'portrait'  # зададим размер и ориентацию страницы
     result_ws.page_setup.paperSize = result_ws.PAPERSIZE_A4
@@ -44,7 +53,8 @@ def text_alignment():  # функция выравнивания текста
     result_ws.page_margins = PageMargins(left=1.5 * cm, right=cm, top=cm, bottom=cm)
 
     result_ws.merge_cells('A1:F1')
-    result_ws['A1'] = name_cons_note  # наименование накладной
+    result_ws['A1'] = name_cons_note + it_is_today_data()  # наименование накладной
+
     result_ws['A1'].alignment = Alignment(horizontal="center", vertical="center")  # выравниваю название накл по центру
     result_ws['A1'].font = Font(bold=True, size=16)  # жирный шрифт, размер шрифта 16
 
@@ -94,13 +104,14 @@ markup_calculation()  # вызов функции расчета наценки 
 text_alignment()  # вызов функции выравнивания текста
 summary_output()  # вызов функции подсчета итогов
 
+
 # работа с колбасой 7 склад
 
 book_2 = load_workbook('sausage7.xlsx')
 sheet_2 = book_2.worksheets[2]  # берем 1 лист активный
 result_wb.create_sheet(title='Колбаса', index=1)  # Добавить новый лист в Excel
 result_ws = result_wb.worksheets[1]  # берем 1 лист
-name_cons_note = 'НАКЛАДНАЯ НА КОЛБАСУ "НАДЕЖДА"'  # название накладной
+name_cons_note = 'НАКЛАДНАЯ на КОЛБАСУ "НАДЕЖДА" от '  # название накладной
 
 column_names()
 
@@ -135,7 +146,7 @@ book_4 = load_workbook('Gerasimova.xlsx')
 sheet_4 = book_4.worksheets[0]  # берем 1 лист активный
 result_wb.create_sheet(title='Герасимова', index=2)  # Добавить новый лист в Excel
 result_ws = result_wb.worksheets[2]  # берем 3 лист
-name_cons_note = 'НАКЛАДНАЯ ГЕРАСИМОВА "НАДЕЖДА"'  # название накладной
+name_cons_note = 'НАКЛАДНАЯ ГЕРАСИМОВА "НАДЕЖДА" от '  # название накладной
 
 column_names()
 
