@@ -75,14 +75,15 @@ def summary_output():  # функция подсчета итоговых сум
     m = int(result_ws.max_row)  # максимальная ячейка
     # выведем сумму накладной, выделим жирным шрифтом и обведем ячейку
     summa = 0
+    total = 0
     for row in range(3, m + 1):
         summa += result_ws[row][5].value
+        total += result_ws[row][2].value * result_ws[row][4].value
     result_ws[m + 1][5].value = round(summa)
     result_ws[m + 1][5].alignment = Alignment(horizontal="center", vertical="center")
     result_ws[m + 1][5].border = Border(top=double, bottom=double, left=double, right=double)
 
-    # выведем итог для отчета
-    total = round(summa * 1.27)
+    total = round(total)  # выведем итог для отчета
     result_ws[m + 2][1].value = 'ИТОГ ДЛЯ ОТЧЕТА:  {} руб'.format(total)
     result_ws[m + 2][1].alignment = Alignment(horizontal="center", vertical="center")
     result_ws[m + 2][1].border = Border(top=thins, bottom=thins, left=thins, right=thins)
