@@ -21,7 +21,6 @@ def column_names():
     result_ws['E2'] = 'Цена'
     result_ws['F2'] = 'Сумма'
 
-
 column_names()
 
 for row in range(2, sheet_1.max_row):
@@ -38,13 +37,10 @@ def markup_calculation():  # функция расчета наценки на �
         result_ws[row][4].value = round(1.27 * result_ws[row][4].value)  # процент
 
 
-# дата
-def it_is_today_data():
-    result_ws['G1'] = datetime.date.today()
-    result_ws['G1'].number_format = 'D MMM YYYY'
-    today_data = str(result_ws['G1'].value)
-    del result_ws['G1']
-    return today_data
+def get_date():  # функция вычисления актуальной даты
+    today = datetime.date.today()
+    return today.strftime("%d-%m-%Y")
+
 
 def text_alignment():  # функция выравнивания текста
     result_ws.page_setup.orientation = 'portrait'  # зададим размер и ориентацию страницы
@@ -53,7 +49,7 @@ def text_alignment():  # функция выравнивания текста
     result_ws.page_margins = PageMargins(left=1.5 * cm, right=cm, top=cm, bottom=cm)
 
     result_ws.merge_cells('A1:F1')
-    result_ws['A1'] = name_cons_note + it_is_today_data()  # наименование накладной
+    result_ws['A1'] = name_cons_note + get_date()  # наименование накладной
 
     result_ws['A1'].alignment = Alignment(horizontal="center", vertical="center")  # выравниваю название накл по центру
     result_ws['A1'].font = Font(bold=True, size=16)  # жирный шрифт, размер шрифта 16
