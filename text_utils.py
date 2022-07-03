@@ -1,8 +1,9 @@
 import re
 
-candy_name_split_regex = re.compile(r'^([а-я.\s]+)\s([^/]+)/(.+)/?$')
+candy_name_split_regex = re.compile(r'^([а-я.\-\s]+)\s([^/]+)/(.+)/?$', re.DOTALL)
 candy_name_count_regex = re.compile(r'\(\s*\d+\s*\*\s*\d+\s*\)')
 match_gr_regex = re.compile(r'(\d+)\s*(г|гр|гра|грам|грамм)(\.|\s)')
+punctuation_regex = re.compile(r'[^\w\d]')
 
 
 def preprocess_candy_string(s):
@@ -38,4 +39,8 @@ def split_candy_name_by_type_and_firm(s):
     if match:
         return match.group(1), match.group(2), match.group(3)
     else:
-        return None
+        return None, None, None
+
+
+def remove_punctuation(s):
+    return punctuation_regex.sub(" ", s)
