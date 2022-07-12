@@ -1,9 +1,9 @@
 import re
 
-candy_name_split_regex = re.compile(r'^([а-я.\-\s]+)\s([^/]+)/(.+)/?$', re.DOTALL)
+candy_name_split_regex = re.compile(r'^([а-я.\-\s]+)\s(.+)\s/(.+)/$', re.DOTALL)
 candy_name_count_regex = re.compile(r'\(\s*\d+\s*\*\s*\d+\s*\)')
-match_gr_regex = re.compile(r'(\d+)\s*(г|гр|гра|грам|грамм)(\.|\s)')
-punctuation_regex = re.compile(r'[^\w\d]')
+match_gr_regex = re.compile(r'(0[.,]\d+|\d+)\s*(г|гр|гра|грам|грамм)(\.|\s)', re.DOTALL)
+punctuation_regex = re.compile(r'[\W\d]')
 
 
 def preprocess_candy_string(s):
@@ -42,5 +42,9 @@ def split_candy_name_by_type_and_firm(s):
         return None, None, None
 
 
-def remove_punctuation(s):
-    return punctuation_regex.sub(" ", s)
+def remove_punctuation_and_digits(s, placeholder=" "):
+    return punctuation_regex.sub(placeholder, s)
+
+
+def create_ngrams(s, n):
+    return [s[i:i + n] for i in range(len(s) - n + 1)]
