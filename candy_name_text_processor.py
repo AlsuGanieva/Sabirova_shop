@@ -22,12 +22,12 @@ morph = MorphAnalyzer()
 def __remove_stop_words(tokens):
     filtered_tokens = []
     for token in tokens:
-        if token not in ["шт", "№", "г"]:  # and token not in stop_words:
+        if token not in ["шт", "№", "г", "кг"]:  # and token not in stop_words:
             filtered_tokens.append(token)
     return filtered_tokens
 
 
-def analyze_name(name, use_ngram: bool = True):
+def analyze_name(name, use_ngram: bool = False):
     """
 
     :param use_ngram: split to ngrams by 3 characters
