@@ -8,9 +8,9 @@ import re
 
 
 class Shop:
-    def __init__(self, name, row_number, percent, is_unformatted):
+    def __init__(self, name, column_number, percent, is_unformatted):
         self.name = name
-        self.row_number = row_number
+        self.column_number = column_number
         self.percent = percent
         self.is_unformatted = is_unformatted
 
@@ -38,7 +38,7 @@ def generate_new_sheet(rows, title, file_name):
         output_worksheet.cell(row_index + 2, 1, value=row[0])
         output_worksheet.cell(row_index + 2, 3, value=row[1])
         output_worksheet.cell(row_index + 2, 4, value=strip_value(row[2]))
-        output_worksheet.cell(row_index + 2, 5, value=strip_value(row[3]))
+        output_worksheet.cell(row_index + 2, 5, value=round(strip_value(row[3]) / row[4]))
         output_worksheet.cell(row_index + 2, 6, value=strip_value(row[2]) * strip_value(row[3]))
 
     output_workbook.save(file_name)
@@ -58,21 +58,27 @@ def generate_unformatted_sheet(rows, title, file_name, percent):
     for row_index, row in enumerate(rows):
         output_worksheet.cell(row_index + 2, 1, value=row[2])
         output_worksheet.cell(row_index + 2, 2, value=row[1])
-        output_worksheet.cell(row_index + 2, 4, value=round(row[3]/100.0*percent))
+        output_worksheet.cell(row_index + 2, 4, value=round(row[3] / row[4] / 100.0 * percent))
 
     output_workbook.save(file_name)
 
 
-def read_data(input_worksheet, row_number):
+def read_data(input_worksheet, column_number):
     rows = []
-    for read_row in range(3, input_worksheet.max_row + 1):
-        count = input_worksheet.cell(read_row, row_number).value
-        cost = input_worksheet.cell(read_row, 6).value
+    for read_row in input_worksheet.iter_rows(min_row=3):
+        count = read_row[column_number].value
+        cost = read_row[5].value
+        divide_by = read_row[6].value
+        if divide_by:
+            divide_by = float(divide_by)
+        else:
+            divide_by = 1.0
         if count and cost:
-            rows.append([input_worksheet.cell(read_row, 1).value,
-                         input_worksheet.cell(read_row, 2).value,
+            rows.append([read_row[0].value,
+                         read_row[1].value,
                          count,
-                         cost])
+                         cost,
+                         divide_by])
     return rows
 
 
@@ -106,16 +112,16 @@ def generate_filename(output, name, title):
 
 def get_shops():
     return [
-        Shop("Калинка", 3, 100, False),
-        Shop("Удача", 4, 100, False),
-        Shop("Надежда", 5, 127, True)
+        Shop("Калинка", 2, 100, False),
+        Shop("Удача", 3, 100, False),
+        Shop("Надежда", 4, 127, True)
     ]
 
 
 def strip_value(string):
     if not isinstance(string, str):
         return string
-    result = re.search('^\D*(\d+[.,]?\d*)\D*$', string)
+    result = re.search(r'^\D*(\d+[.,]?\d*)\D*$', string)
     if result:
         count = result.group(1)
         if count.isdigit():
@@ -131,7 +137,7 @@ if __name__ == '__main__':
     input_worksheet, name = load_input_file(args.input.name)
     for shop in get_shops():
         output_name = generate_filename(args.output, name, shop.name)
-        rows = read_data(input_worksheet, shop.row_number)
+        rows = read_data(input_worksheet, shop.column_number)
         if shop.is_unformatted:
             generate_unformatted_sheet(rows, title=shop.name, file_name=output_name, percent=shop.percent)
         else:
