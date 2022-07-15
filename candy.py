@@ -1,16 +1,17 @@
-from openpyxl import Workbook
-from openpyxl import load_workbook
+import os
 from argparse import ArgumentParser
 from argparse import FileType
 from datetime import date
-from candy_name_text_processor import Model
 from hungarian_algorithm import algorithm
-import os
+
+from openpyxl import Workbook
+from openpyxl import load_workbook
+
 import text_utils
+from candy_name_text_processor import Model
 
 
 class Candy:
-
     def __init__(self, art, name, unit, count=None, cost=None, summary=None):
         self.art = art
         self.name = name
@@ -56,28 +57,28 @@ def load_input_file(input_path):
 
 
 def read_1c_worksheet(input_worksheet):
-    rows = []
+    candies = []
     for row_number in range(2, input_worksheet.max_row):
         name = input_worksheet.cell(row_number, 6).value
         if name:
-            rows.append(Candy(art=input_worksheet.cell(row_number, 3).value,
-                              name=name,
-                              unit=input_worksheet.cell(row_number, 4).value))
-    return rows
+            candies.append(Candy(art=input_worksheet.cell(row_number, 3).value,
+                                 name=name,
+                                 unit=input_worksheet.cell(row_number, 4).value))
+    return candies
 
 
 def read_candy_worksheet(input_worksheet):
-    rows = []
+    candies = []
     for row_number in range(2, input_worksheet.max_row):
         name = input_worksheet.cell(row_number, 4).value
         if name:
-            rows.append(Candy(art=input_worksheet.cell(row_number, 2).value,
-                              name=name,
-                              count=input_worksheet.cell(row_number, 5).value,
-                              unit=input_worksheet.cell(row_number, 6).value,
-                              cost=input_worksheet.cell(row_number, 7).value,
-                              summary=input_worksheet.cell(row_number, 8).value))
-    return rows
+            candies.append(Candy(art=input_worksheet.cell(row_number, 2).value,
+                                 name=name,
+                                 count=input_worksheet.cell(row_number, 5).value,
+                                 unit=input_worksheet.cell(row_number, 6).value,
+                                 cost=input_worksheet.cell(row_number, 7).value,
+                                 summary=input_worksheet.cell(row_number, 8).value))
+    return candies
 
 
 def generate_new_sheet(rows, title, file_name):
@@ -121,23 +122,21 @@ def calculate_result(one_c_candies, candy_candies):
         similarity = round(similarity * 100)
         min_similarity = 85
 
-        if prediction.art == candy.art and similarity >= min_similarity:
+        if prediction.art == candy.art:
             # print("{} -> {} | {} IDENTICAL".format(prediction.name, candy.name, similarity))
             rows.append([candy.art, candy.name, candy.count, candy.unit, candy.cost, candy.summary,
                          "X{}".format(similarity)])
             identicals += 1
         elif similarity >= min_similarity:
-            rows.append([candy.art, candy.name, candy.count, candy.unit, candy.cost, candy.summary])
+            rows.append(
+                [candy.art, candy.name, candy.count, candy.unit, candy.cost, candy.summary, "L{}".format(similarity)])
             # print("{} -> {} | {} LIKE".format(prediction.name, candy.name, similarity).replace("\n", ""))
-            likes += 1
-        elif prediction.art == candy.art:
-            rows.append([candy.art, candy.name, candy.count, candy.unit, candy.cost, candy.summary])
-            print("{}|{} -> {}|{} | {} IDENTICAL".format(prediction.name, prediction.unit, candy.name, candy.unit, similarity))
-            array_1c = model.result.toarray()
-            array_v = vector.toarray()[0]
-            for feature_name, point_1c, point in zip(model.pipeline.get_feature_names_out(), array_1c[position], array_v):
-                if (point_1c > 0 or point > 0) and (point_1c != point):
-                    print(feature_name, point_1c, point)
+            # array_1c = model.result.toarray()
+            # array_v = vector.toarray()[0]
+            # for feature_name, point_1c, point in zip(model.pipeline.get_feature_names_out(), array_1c[position],
+            #                                          array_v):
+            #     if (point_1c > 0 or point > 0) and (point_1c != point):
+            #         print(feature_name, point_1c, point)
             likes += 1
         else:
             rows.append([candy.art, candy.name, candy.count, candy.unit, candy.cost, candy.summary])

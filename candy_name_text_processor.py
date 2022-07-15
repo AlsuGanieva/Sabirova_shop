@@ -27,11 +27,12 @@ def __remove_stop_words(tokens):
     return filtered_tokens
 
 
-def analyze_name(name, use_ngram: bool = False):
+def analyze_name(name: str, use_ngram: bool = False, remove_duplicates: bool = True):
     """
-
+    analyze for every name
+    :param name: name of candy
+    :param remove_duplicates: removes duplicates
     :param use_ngram: split to ngrams by 3 characters
-    :param names: list of names
     :return: Prepared corpus. List of lists of tokens
     """
     name = text_utils.preprocess_candy_string(name)
@@ -44,6 +45,9 @@ def analyze_name(name, use_ngram: bool = False):
         tokens = [ngram for token in tokens for ngram in text_utils.create_ngrams(token, n=3)]
     else:
         tokens = [morph.parse(token)[0].normal_form for token in tokens]
+
+    if remove_duplicates:
+        tokens = list(set(tokens))
     return tokens
 
 
@@ -59,7 +63,7 @@ def split_to_features(candies):
         unit = __analyze_type_name(candy.unit)
         if not weight:  # or unit == "шт":
             weight = "None"
-        art = ""
+        art = "None"
         if candy.art:
             art = candy.art
         feature_dict = {'type': __analyze_type_name(type_name),
@@ -75,7 +79,7 @@ class Model:
         self.candies = None
         self.result = None
         self.pipeline = ColumnTransformer([
-            ('tf-idf', TfidfVectorizer(analyzer=analyze_name), 0),
+            ('tf_idf', TfidfVectorizer(analyzer=analyze_name), 0),
             ('dict', DictVectorizer(), 1)
         ])
 
