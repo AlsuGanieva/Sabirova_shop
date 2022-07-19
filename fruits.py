@@ -35,7 +35,7 @@ def load_input_file(input_path):
     return input_worksheet, name
 
 
-def generate_unformatted_sheet(friuts, title, file_name, percent):
+def generate_unformatted_sheet(fruits, title, file_name, percent):
     output_workbook = Workbook()
     output_worksheet = output_workbook.active
 
@@ -46,7 +46,7 @@ def generate_unformatted_sheet(friuts, title, file_name, percent):
     output_worksheet["D1"] = "ЦЕНА"
     output_worksheet["E1"] = "сумма"
 
-    for row_index, fruit in enumerate(friuts):
+    for row_index, fruit in enumerate(fruits):
         output_worksheet.cell(row_index + 2, 1, value=fruit.count)
         output_worksheet.cell(row_index + 2, 2, value=fruit.name)
         output_worksheet.cell(row_index + 2, 4, value=round((fruit.cost / fruit.divide_by) / 100.0 * percent))
@@ -150,11 +150,28 @@ def save_fruits(fruits, shop, output_name):
         workbook.save(output_name)
 
 
+def process_fruits_facade(input_file_names, output_directory):
+    concat_name = ""
+    worksheets_and_names = []
+    for file_name in input_file_names:
+        input_worksheet, name = load_input_file(file_name)
+        worksheets_and_names.append((input_worksheet, name))
+        concat_name += name + "-"
+    concat_name = concat_name[:-1]
+    for shop in get_shops():
+        fruits_for_shop = []
+        for worksheet_and_name in worksheets_and_names:
+            input_fruits = read_data(worksheet_and_name[0], shop.column_number)
+            fruits_for_shop += input_fruits
+            if not shop.should_join:
+                output_name = generate_filename(output_directory, worksheet_and_name[1], shop.name)
+                save_fruits(input_fruits, shop, output_name)
+        if shop.should_join:
+            output_name = generate_filename(output_directory, concat_name, shop.name)
+            save_fruits(fruits_for_shop, shop, output_name)
+
+
 if __name__ == '__main__':
     args = init_args()
 
-    input_worksheet, name = load_input_file(args.input.name)
-    for shop in get_shops():
-        output_name = generate_filename(args.output, name, shop.name)
-        fruits = read_data(input_worksheet, shop.column_number)
-        save_fruits(fruits, shop, output_name)
+    process_fruits_facade([args.input.name], args.output)

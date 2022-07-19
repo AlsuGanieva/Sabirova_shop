@@ -55,24 +55,16 @@ def on_save():
         )
         return
     directory = select_directory()
-    for shop in fruits.get_shops():
-        fruits_for_shop = []
-        name_for_shop = ""
-        for file_name in file_names:
-            input_worksheet, name = fruits.load_input_file(file_name)
-            name_for_shop += name + "-"
-            input_fruits = fruits.read_data(input_worksheet, shop.column_number)
-            fruits_for_shop += input_fruits
-            if not shop.should_join:
-                output_name = fruits.generate_filename(directory, name, shop.name)
-                fruits.save_fruits(input_fruits, shop, output_name)
-        if shop.should_join:
-            output_name = fruits.generate_filename(directory, name_for_shop[:-1], shop.name)
-            fruits.save_fruits(fruits_for_shop, shop, output_name)
+    fruits.process_fruits_facade(input_file_names=file_names, output_directory=directory)
+    showinfo(
+        title='Успех',
+        message="Накладные сделаны"
+    )
 
 
 if __name__ == "__main__":
     root = tk.Tk()
+    root.geometry("750x350")
     root.title("Фрукты и Сухофрукты")
 
     fruits_label = tk.Label(root, text="")
