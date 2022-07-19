@@ -1,18 +1,31 @@
-from openpyxl import Workbook
-from openpyxl import load_workbook
+import os
+import re
 from argparse import ArgumentParser
 from argparse import FileType
 from datetime import date
-import os
-import re
+
+from openpyxl import Workbook
+from openpyxl import load_workbook
+
+import workbook_helper
 
 
 class Shop:
-    def __init__(self, name, column_number, percent, is_unformatted):
+    def __init__(self, name, column_number, percent, is_unformatted, should_join):
         self.name = name
         self.column_number = column_number
         self.percent = percent
         self.is_unformatted = is_unformatted
+        self.should_join = should_join
+
+
+class Fruit:
+    def __init__(self, art, name, count, cost, divide_by):
+        self.art = art
+        self.name = name
+        self.count = count
+        self.cost = cost
+        self.divide_by = divide_by
 
 
 def load_input_file(input_path):
@@ -22,29 +35,7 @@ def load_input_file(input_path):
     return input_worksheet, name
 
 
-def generate_new_sheet(rows, title, file_name):
-    output_workbook = Workbook()
-    output_worksheet = output_workbook.active
-
-    output_worksheet.title = title
-    output_worksheet["A1"] = "арт"
-    output_worksheet["B1"] = "штрих"
-    output_worksheet["C1"] = "наименование"
-    output_worksheet["D1"] = "тара"
-    output_worksheet["E1"] = "цена"
-    output_worksheet["F1"] = "сумма"
-
-    for row_index, row in enumerate(rows):
-        output_worksheet.cell(row_index + 2, 1, value=row[0])
-        output_worksheet.cell(row_index + 2, 3, value=row[1])
-        output_worksheet.cell(row_index + 2, 4, value=strip_value(row[2]))
-        output_worksheet.cell(row_index + 2, 5, value=round(strip_value(row[3]) / row[4]))
-        output_worksheet.cell(row_index + 2, 6, value=strip_value(row[2]) * strip_value(row[3]))
-
-    output_workbook.save(file_name)
-
-
-def generate_unformatted_sheet(rows, title, file_name, percent):
+def generate_unformatted_sheet(fruits, title, file_name, percent):
     output_workbook = Workbook()
     output_worksheet = output_workbook.active
 
@@ -55,16 +46,16 @@ def generate_unformatted_sheet(rows, title, file_name, percent):
     output_worksheet["D1"] = "ЦЕНА"
     output_worksheet["E1"] = "сумма"
 
-    for row_index, row in enumerate(rows):
-        output_worksheet.cell(row_index + 2, 1, value=row[2])
-        output_worksheet.cell(row_index + 2, 2, value=row[1])
-        output_worksheet.cell(row_index + 2, 4, value=round(row[3] / row[4] / 100.0 * percent))
+    for row_index, fruit in enumerate(fruits):
+        output_worksheet.cell(row_index + 2, 1, value=fruit.count)
+        output_worksheet.cell(row_index + 2, 2, value=fruit.name)
+        output_worksheet.cell(row_index + 2, 4, value=round((fruit.cost / fruit.divide_by) / 100.0 * percent))
 
     output_workbook.save(file_name)
 
 
 def read_data(input_worksheet, column_number):
-    rows = []
+    fruits = []
     for read_row in input_worksheet.iter_rows(min_row=3):
         count = read_row[column_number].value
         cost = read_row[5].value
@@ -74,12 +65,14 @@ def read_data(input_worksheet, column_number):
         else:
             divide_by = 1.0
         if count and cost:
-            rows.append([read_row[0].value,
-                         read_row[1].value,
-                         count,
-                         cost,
-                         divide_by])
-    return rows
+            fruits.append(
+                Fruit(art=read_row[0].value,
+                      name=read_row[1].value,
+                      count=count,
+                      cost=cost,
+                      divide_by=divide_by)
+            )
+    return fruits
 
 
 def get_date():
@@ -112,9 +105,9 @@ def generate_filename(output, name, title):
 
 def get_shops():
     return [
-        Shop("Калинка", 2, 100, False),
-        Shop("Удача", 3, 100, False),
-        Shop("Надежда", 4, 127, True)
+        Shop("Калинка", 2, 100, is_unformatted=False, should_join=False),
+        Shop("Удача", 3, 100, is_unformatted=False, should_join=True),
+        Shop("Надежда", 4, 127, is_unformatted=True, should_join=True)
     ]
 
 
@@ -131,14 +124,54 @@ def strip_value(string):
     return None
 
 
+def map_fruit_to_1c(fruits):
+    oneCRows = []
+    for fruit in fruits:
+        cost = round(strip_value(fruit.cost) / fruit.divide_by)
+        count = strip_value(fruit.count)
+        oneCRows.append(
+            workbook_helper.OneCRow(
+                art=fruit.art,
+                code="",
+                name=fruit.name,
+                count=count,
+                cost=cost,
+                summary=count * cost
+            )
+        )
+    return oneCRows
+
+
+def save_fruits(fruits, shop, output_name):
+    if shop.is_unformatted:
+        generate_unformatted_sheet(fruits, title=shop.name, file_name=output_name, percent=shop.percent)
+    else:
+        workbook = workbook_helper.generate_1c_sheet(map_fruit_to_1c(fruits), title=shop.name)
+        workbook.save(output_name)
+
+
+def process_fruits_facade(input_file_names, output_directory):
+    concat_name = ""
+    worksheets_and_names = []
+    for file_name in input_file_names:
+        input_worksheet, name = load_input_file(file_name)
+        worksheets_and_names.append((input_worksheet, name))
+        concat_name += name + "-"
+    concat_name = concat_name[:-1]
+    for shop in get_shops():
+        fruits_for_shop = []
+        for worksheet_and_name in worksheets_and_names:
+            input_fruits = read_data(worksheet_and_name[0], shop.column_number)
+            fruits_for_shop += input_fruits
+            if not shop.should_join:
+                output_name = generate_filename(output_directory, worksheet_and_name[1], shop.name)
+                save_fruits(input_fruits, shop, output_name)
+        if shop.should_join:
+            output_name = generate_filename(output_directory, concat_name, shop.name)
+            save_fruits(fruits_for_shop, shop, output_name)
+
+
 if __name__ == '__main__':
     args = init_args()
 
-    input_worksheet, name = load_input_file(args.input.name)
-    for shop in get_shops():
-        output_name = generate_filename(args.output, name, shop.name)
-        rows = read_data(input_worksheet, shop.column_number)
-        if shop.is_unformatted:
-            generate_unformatted_sheet(rows, title=shop.name, file_name=output_name, percent=shop.percent)
-        else:
-            generate_new_sheet(rows, title=shop.name, file_name=output_name)
+    process_fruits_facade([args.input.name], args.output)
