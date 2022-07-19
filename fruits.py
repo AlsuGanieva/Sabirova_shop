@@ -5,9 +5,8 @@ from argparse import FileType
 from datetime import date
 
 from openpyxl import Workbook
-from openpyxl import load_workbook
 
-import workbook_helper
+import workbook_utils
 
 
 class Shop:
@@ -28,13 +27,7 @@ class Fruit:
         self.divide_by = divide_by
 
 
-def load_input_file(input_path):
-    input_workbook = load_workbook(input_path)
-    input_worksheet = input_workbook.active
-    name = input_worksheet["B2"].value
-    return input_worksheet, name
-
-
+# todo: Move to workbook_utils
 def generate_unformatted_sheet(fruits, title, file_name, percent):
     output_workbook = Workbook()
     output_worksheet = output_workbook.active
@@ -50,6 +43,8 @@ def generate_unformatted_sheet(fruits, title, file_name, percent):
         output_worksheet.cell(row_index + 2, 1, value=fruit.count)
         output_worksheet.cell(row_index + 2, 2, value=fruit.name)
         output_worksheet.cell(row_index + 2, 4, value=round((fruit.cost / fruit.divide_by) / 100.0 * percent))
+
+    workbook_utils.apply_worksheet_width(output_worksheet)
 
     output_workbook.save(file_name)
 
@@ -130,7 +125,7 @@ def map_fruit_to_1c(fruits):
         cost = round(strip_value(fruit.cost) / fruit.divide_by)
         count = strip_value(fruit.count)
         oneCRows.append(
-            workbook_helper.OneCRow(
+            workbook_utils.OneCRow(
                 art=fruit.art,
                 code="",
                 name=fruit.name,
@@ -146,7 +141,7 @@ def save_fruits(fruits, shop, output_name):
     if shop.is_unformatted:
         generate_unformatted_sheet(fruits, title=shop.name, file_name=output_name, percent=shop.percent)
     else:
-        workbook = workbook_helper.generate_1c_sheet(map_fruit_to_1c(fruits), title=shop.name)
+        workbook = workbook_utils.generate_1c_sheet(map_fruit_to_1c(fruits), title=shop.name)
         workbook.save(output_name)
 
 
@@ -154,7 +149,8 @@ def process_fruits_facade(input_file_names, output_directory):
     concat_name = ""
     worksheets_and_names = []
     for file_name in input_file_names:
-        input_worksheet, name = load_input_file(file_name)
+        input_worksheet = workbook_utils.load_input_worksheet(file_name)
+        name = input_worksheet["B2"].value
         worksheets_and_names.append((input_worksheet, name))
         concat_name += name + "-"
     concat_name = concat_name[:-1]
