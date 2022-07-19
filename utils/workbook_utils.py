@@ -1,4 +1,7 @@
+import pyexcel  # pyexcel-xls pyexcel-xlsx
 from openpyxl import Workbook
+from openpyxl import load_workbook
+from openpyxl.worksheet.worksheet import Worksheet
 
 
 class OneCRow:
@@ -31,6 +34,12 @@ def generate_1c_sheet(oneCRows, title):
         output_worksheet.cell(row_index + 2, 5, value=row.cost)
         output_worksheet.cell(row_index + 2, 6, value=row.summary)
 
+    apply_worksheet_width(output_worksheet)
+
+    return output_workbook
+
+
+def apply_worksheet_width(output_worksheet):
     dims = {}
     for row in output_worksheet.rows:
         for cell in row:
@@ -39,4 +48,19 @@ def generate_1c_sheet(oneCRows, title):
     for col, value in dims.items():
         output_worksheet.column_dimensions[col].width = value + 3
 
-    return output_workbook
+
+def check_for_xls(path: str):
+    if path.endswith(".xls"):
+        new_path = path + "x"
+        pyexcel.save_book_as(file_name=path, dest_file_name=new_path)
+        return new_path
+    else:
+        return path
+
+
+def load_input_worksheet(input_path: str, handle_xls: bool = True) -> Worksheet:
+    if handle_xls:
+        input_path = check_for_xls(input_path)
+    input_workbook = load_workbook(input_path)
+    input_worksheet = input_workbook.active
+    return input_worksheet

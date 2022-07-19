@@ -2,12 +2,9 @@ import os
 from argparse import ArgumentParser
 from argparse import FileType
 from datetime import date
-from hungarian_algorithm import algorithm
+from typing import List
 
-from openpyxl import Workbook
-from openpyxl import load_workbook
-
-import text_utils
+from utils import text_utils, workbook_utils
 from candy_name_text_processor import Model
 
 
@@ -50,12 +47,6 @@ def init_args():
     return parser.parse_args()
 
 
-def load_input_file(input_path):
-    input_workbook = load_workbook(input_path)
-    input_worksheet = input_workbook.active
-    return input_worksheet
-
-
 def read_1c_worksheet(input_worksheet):
     candies = []
     for row_number in range(2, input_worksheet.max_row):
@@ -81,37 +72,11 @@ def read_candy_worksheet(input_worksheet):
     return candies
 
 
-def generate_new_sheet(rows, title, file_name):
-    output_workbook = Workbook()
-    output_worksheet = output_workbook.active
-
-    output_worksheet.title = title
-    output_worksheet["A1"] = "арт"
-    output_worksheet["B1"] = "штрих"
-    output_worksheet["C1"] = "наименование"
-    output_worksheet["D1"] = "Кол-во"
-    output_worksheet["E1"] = "Ед.изм."
-    output_worksheet["F1"] = "цена"
-    output_worksheet["G1"] = "сумма"
-
-    for row_index, row in enumerate(rows):
-        output_worksheet.cell(row_index + 2, 1, value=row[0])
-        output_worksheet.cell(row_index + 2, 3, value=row[1])
-        output_worksheet.cell(row_index + 2, 4, value=row[2])
-        output_worksheet.cell(row_index + 2, 5, value=row[3])
-        output_worksheet.cell(row_index + 2, 6, value=row[4])
-        output_worksheet.cell(row_index + 2, 7, value=row[5])
-        if len(row) > 6:
-            output_worksheet.cell(row_index + 2, 2, value=row[6])  # temp
-
-    output_workbook.save(file_name)
-
-
-def calculate_result(one_c_candies, candy_candies):
+def calculate_result(one_c_candies, candy_candies) -> List[workbook_utils.OneCRow]:
     identicals = 0
     likes = 0
     news = 0
-    rows = []
+    one_c_rows = []
     model = Model()
     model.fit(one_c_candies)
     for candy in candy_candies:
@@ -123,13 +88,12 @@ def calculate_result(one_c_candies, candy_candies):
         min_similarity = 85
 
         if prediction.art == candy.art:
-            # print("{} -> {} | {} IDENTICAL".format(prediction.name, candy.name, similarity))
-            rows.append([candy.art, candy.name, candy.count, candy.unit, candy.cost, candy.summary,
-                         "X{}".format(similarity)])
+            one_c_rows.append(map_candy_to_one_c_row(candy, "X{}".format(similarity)))
             identicals += 1
+            # print("{} -> {} | {} IDENTICAL".format(prediction.name, candy.name, similarity))
         elif similarity >= min_similarity:
-            rows.append(
-                [candy.art, candy.name, candy.count, candy.unit, candy.cost, candy.summary, "L{}".format(similarity)])
+            one_c_rows.append(map_candy_to_one_c_row(candy, "L{}".format(similarity)))
+            likes += 1
             # print("{} -> {} | {} LIKE".format(prediction.name, candy.name, similarity).replace("\n", ""))
             # array_1c = model.result.toarray()
             # array_v = vector.toarray()[0]
@@ -137,23 +101,34 @@ def calculate_result(one_c_candies, candy_candies):
             #                                          array_v):
             #     if (point_1c > 0 or point > 0) and (point_1c != point):
             #         print(feature_name, point_1c, point)
-            likes += 1
         else:
-            rows.append([candy.art, candy.name, candy.count, candy.unit, candy.cost, candy.summary])
-            # print("NOT EXIST -> {} NOT EXIST".format(candy.name))
+            one_c_rows.append(map_candy_to_one_c_row(candy, ""))
             news += 1
+            # print("NOT EXIST -> {} NOT EXIST".format(candy.name))
     print("IDENTICALS:{} | LIKES:{} | NEW ONES:{}".format(identicals, likes, news))
-    return rows
+    return one_c_rows
+
+
+def map_candy_to_one_c_row(candy: Candy, similarity: str) -> workbook_utils.OneCRow:
+    return workbook_utils.OneCRow(
+        art=candy.art,
+        code=similarity,
+        name=candy.name,
+        count=candy.count,
+        cost=candy.cost,
+        summary=candy.summary
+    )
 
 
 if __name__ == '__main__':
     args = init_args()
 
-    input_1c_worksheet = load_input_file(args.input_1c.name)
-    input_candy_worksheet = load_input_file(args.input_candy.name)
+    input_1c_worksheet = workbook_utils.load_input_worksheet(args.input_1c.name)
+    input_candy_worksheet = workbook_utils.load_input_worksheet(args.input_candy.name)
 
     one_c_rows = read_1c_worksheet(input_1c_worksheet)
     candy_rows = read_candy_worksheet(input_candy_worksheet)
 
     rows = calculate_result(one_c_rows, candy_rows)
-    generate_new_sheet(rows, "Кондитерка", generate_filename(args.output, "Кондитерка"))
+    workbook = workbook_utils.generate_1c_sheet(rows, "Кондитерка")
+    workbook.save(generate_filename(args.output, "Кондитерка"))
