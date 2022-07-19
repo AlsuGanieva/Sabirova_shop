@@ -2,7 +2,7 @@ import tkinter as tk
 import tkinter.filedialog as fd
 from tkinter.messagebox import showinfo
 
-import fruits
+import fruits as f
 
 file_names = ["", ""]
 
@@ -55,7 +55,7 @@ def on_save():
         )
         return
     directory = select_directory()
-    fruits.process_fruits_facade(input_file_names=file_names, output_directory=directory)
+    f.process_fruits_facade(input_file_names=file_names, output_directory=directory)
     showinfo(
         title='Успех',
         message="Накладные сгенерированы"

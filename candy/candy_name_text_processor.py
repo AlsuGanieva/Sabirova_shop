@@ -9,7 +9,7 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-import text_utils
+from utils import text_utils
 
 
 class Model:

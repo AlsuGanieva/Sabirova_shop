@@ -6,7 +6,7 @@ from datetime import date
 
 from openpyxl import Workbook
 
-import workbook_utils
+from utils import workbook_utils
 
 
 class Shop:

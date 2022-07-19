@@ -2,11 +2,9 @@ import os
 from argparse import ArgumentParser
 from argparse import FileType
 from datetime import date
-from hungarian_algorithm import algorithm
 from typing import List
 
-import text_utils
-import workbook_utils
+from utils import text_utils, workbook_utils
 from candy_name_text_processor import Model
 
 
@@ -117,7 +115,8 @@ def map_candy_to_one_c_row(candy: Candy, similarity: str) -> workbook_utils.OneC
         code=similarity,
         name=candy.name,
         count=candy.count,
-        cost=candy.cost
+        cost=candy.cost,
+        summary=candy.summary
     )
 
 
