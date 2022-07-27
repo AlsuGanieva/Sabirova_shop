@@ -13,7 +13,7 @@ result_ws.title = 'Кондитерка'  # название 1 листа
 name_cons_note = 'НАКЛАДНАЯ на КОНДИТЕРКУ "НАДЕЖДА" от '  # название накладной
 
 
-def column_names():
+def set_default_column_headers():
     result_ws['A2'] = '№'
     result_ws['B2'] = 'Наименование'
     result_ws['C2'] = 'Кол-во'
@@ -21,7 +21,7 @@ def column_names():
     result_ws['E2'] = 'Цена'
     result_ws['F2'] = 'Сумма'
 
-column_names()
+set_default_column_headers()
 
 for row in range(2, sheet_1.max_row):
     result_ws.append(
@@ -109,7 +109,7 @@ result_wb.create_sheet(title='Колбаса', index=1)  # Добавить но
 result_ws = result_wb.worksheets[1]  # берем 1 лист
 name_cons_note = 'НАКЛАДНАЯ на КОЛБАСУ "НАДЕЖДА" от '  # название накладной
 
-column_names()
+set_default_column_headers()
 
 for row in range(3, sheet_2.max_row + 1):
     result_ws.append([row - 2, sheet_2[row][0].value, sheet_2[row][1].value, '',
@@ -127,8 +127,8 @@ def strip_value(string):
         return None
 
 
-for row in range(result_ws.max_row + 1, sheet_3.max_row - 9):
-    result_ws.append([result_ws.max_row + 1, sheet_3[row][1].value, strip_value(sheet_3[row][3].value),
+for row in range(10, sheet_3.max_row - 9):
+    result_ws.append([result_ws.max_row - 1, sheet_3[row][1].value, strip_value(sheet_3[row][3].value),
                       sheet_3[row][5].value, strip_value(sheet_3[row][2].value),
                       strip_value(sheet_3[row][6].value)])
 
@@ -144,7 +144,7 @@ result_wb.create_sheet(title='Герасимова', index=2)  # Добавит�
 result_ws = result_wb.worksheets[2]  # берем 3 лист
 name_cons_note = 'НАКЛАДНАЯ ГЕРАСИМОВА "НАДЕЖДА" от '  # название накладной
 
-column_names()
+set_default_column_headers()
 
 for row in range(13, sheet_4.max_row - 7):
     result_ws.append([row - 2, sheet_4[row][3].value, sheet_4[row][20].value,
