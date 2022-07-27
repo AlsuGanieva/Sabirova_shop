@@ -1,0 +1,9 @@
+openpyxl
+nltk
+numpy
+pymorphy2
+sklearn
+scikit-learn
+pyexcel
+pyexcel-xls
+pyexcel-xlsx

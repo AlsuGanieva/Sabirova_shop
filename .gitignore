@@ -4,4 +4,6 @@ venv
 venv/*
 .idea
 .idea/*
-examples
+examples/*
+!examples/Сухофрукты.xlsx
+!examples/Фрукты.xlsx
