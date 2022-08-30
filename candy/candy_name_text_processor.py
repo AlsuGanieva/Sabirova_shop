@@ -55,13 +55,9 @@ class Model:
             unit = self.__analyze_type_name(candy.unit)
             if not weight:  # or unit == "шт":
                 weight = "None"
-            art = "None"
-            if candy.art:
-                art = candy.art
             feature_dict = {'type': self.__analyze_type_name(type_name),
                             'weight': weight,
-                            'unit': unit,
-                            'art': art}
+                            'unit': unit}
             names_features.append((name, feature_dict))
         return names_features
 

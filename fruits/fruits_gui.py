@@ -2,7 +2,7 @@ import tkinter as tk
 import tkinter.filedialog as fd
 from tkinter.messagebox import showinfo
 
-import fruits as f
+import fruits.fruits as f
 
 file_names = ["", ""]
 

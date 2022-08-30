@@ -5,7 +5,7 @@ from datetime import date
 from typing import List
 
 from utils import text_utils, workbook_utils
-from candy_name_text_processor import Model
+from candy.candy_name_text_processor import Model
 
 
 class Candy:
@@ -37,7 +37,7 @@ def dir_path(string):
 def init_args():
     parser = ArgumentParser(description="Накладные на кондитерку")
     parser.add_argument("-i1", "--input-1c", required=True, help="Выгрузка из 1С", type=FileType('r'))
-    parser.add_argument("-iс", "--input-candy", required=True, help="Накладная \"кондитерка\"", type=FileType('r'))
+    parser.add_argument("-ic", "--input-candy", required=True, help="Накладная \"кондитерка\"", type=FileType('r'))
     parser.add_argument("-o",
                         "--output",
                         required=False,
@@ -85,14 +85,14 @@ def calculate_result(one_c_candies, candy_candies) -> List[workbook_utils.OneCRo
 
         prediction, similarity, position, vector = model.predict(candy)
         similarity = round(similarity * 100)
-        min_similarity = 85
+        min_similarity = 95
 
         if prediction.art == candy.art:
-            one_c_rows.append(map_candy_to_one_c_row(candy, "X{}".format(similarity)))
+            one_c_rows.append(map_candy_to_one_c_row(candy, "Одинаковы {}%".format(similarity)))
             identicals += 1
             # print("{} -> {} | {} IDENTICAL".format(prediction.name, candy.name, similarity))
         elif similarity >= min_similarity:
-            one_c_rows.append(map_candy_to_one_c_row(candy, "L{}".format(similarity)))
+            one_c_rows.append(map_candy_to_one_c_row(candy, "Похож {}% на {}".format(similarity, prediction.art)))
             likes += 1
             # print("{} -> {} | {} LIKE".format(prediction.name, candy.name, similarity).replace("\n", ""))
             # array_1c = model.result.toarray()
