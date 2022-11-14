@@ -120,15 +120,18 @@ def map_candy_to_one_c_row(candy: Candy, similarity: str) -> workbook_utils.OneC
     )
 
 
-if __name__ == '__main__':
-    args = init_args()
-
-    input_1c_worksheet = workbook_utils.load_input_worksheet(args.input_1c.name)
-    input_candy_worksheet = workbook_utils.load_input_worksheet(args.input_candy.name)
+def process_candy_facade(input_file_names, output_directory):
+    input_1c_worksheet = workbook_utils.load_input_worksheet(input_file_names[0])
+    input_candy_worksheet = workbook_utils.load_input_worksheet(input_file_names[1])
 
     one_c_rows = read_1c_worksheet(input_1c_worksheet)
     candy_rows = read_candy_worksheet(input_candy_worksheet)
 
     rows = calculate_result(one_c_rows, candy_rows)
     workbook = workbook_utils.generate_1c_sheet(rows, "Кондитерка")
-    workbook.save(generate_filename(args.output, "Кондитерка"))
+    workbook.save(generate_filename(output_directory, "Кондитерка"))
+
+
+if __name__ == '__main__':
+    args = init_args()
+    process_candy_facade(input_file_names=[args.input_1c.name, args.input_candy.name], output_directory=args.output)
