@@ -5,6 +5,16 @@ from openpyxl.worksheet.page import PageMargins
 import re
 import datetime
 
+#def read_sweets_worksheets(input_name: str, title: str):
+#    book = load_workbook('sweets.xlsx')
+#    sheet_1 = book.active  # берем 1 лист активный
+#    result_wb = Workbook()  # создаем рабочую книгу result_wb
+#    result_ws = result_wb.worksheets[0]  # берем 1 лист
+#    result_ws.title = 'Кондитерка'  # название 1 листа
+#    name_cons_note = 'НАКЛАДНАЯ на КОНДИТЕРКУ "НАДЕЖДА" от '  # название накладной
+
+#read_sweets_worksheets('sweets.xlsx', 'Кондитерка')
+
 book = load_workbook('sweets.xlsx')
 sheet_1 = book.active  # берем 1 лист активный
 result_wb = Workbook()  # создаем рабочую книгу result_wb
@@ -111,8 +121,8 @@ name_cons_note = 'НАКЛАДНАЯ на КОЛБАСУ "НАДЕЖДА" от '
 
 set_default_column_headers()
 
-for row in range(3, sheet_2.max_row + 1):
-    result_ws.append([row - 2, sheet_2[row][0].value, sheet_2[row][1].value, '',
+for row in range(2, sheet_2.max_row + 1):
+    result_ws.append([row - 1, sheet_2[row][0].value, sheet_2[row][1].value, '',
                       sheet_2[row][2].value, sheet_2[row][3].value])
 
 book_3 = load_workbook('sausage75.xlsx')

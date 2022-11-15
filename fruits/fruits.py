@@ -149,7 +149,7 @@ def process_fruits_facade(input_file_names, output_directory):
     concat_name = ""
     worksheets_and_names = []
     for file_name in input_file_names:
-        input_worksheet = workbook_utils.load_input_worksheet(file_name)
+        input_worksheet = workbook_utils.load_input_workbook(file_name).active
         name = input_worksheet["B2"].value
         worksheets_and_names.append((input_worksheet, name))
         concat_name += name + "-"

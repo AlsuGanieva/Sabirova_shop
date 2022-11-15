@@ -123,8 +123,8 @@ def map_candy_to_one_c_row(candy: Candy, similarity: str) -> workbook_utils.OneC
 if __name__ == '__main__':
     args = init_args()
 
-    input_1c_worksheet = workbook_utils.load_input_worksheet(args.input_1c.name)
-    input_candy_worksheet = workbook_utils.load_input_worksheet(args.input_candy.name)
+    input_1c_worksheet = workbook_utils.load_input_workbook(args.input_1c.name).active
+    input_candy_worksheet = workbook_utils.load_input_workbook(args.input_candy.name).active
 
     one_c_rows = read_1c_worksheet(input_1c_worksheet)
     candy_rows = read_candy_worksheet(input_candy_worksheet)
