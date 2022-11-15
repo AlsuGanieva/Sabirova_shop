@@ -1,7 +1,6 @@
 import pyexcel  # pyexcel-xls pyexcel-xlsx
 from openpyxl import Workbook
 from openpyxl import load_workbook
-from openpyxl.worksheet.worksheet import Worksheet
 
 
 class OneCRow:
@@ -58,9 +57,8 @@ def check_for_xls(path: str):
         return path
 
 
-def load_input_worksheet(input_path: str, handle_xls: bool = True) -> Worksheet:
+def load_input_workbook(input_path: str, handle_xls: bool = True) -> Workbook:
     if handle_xls:
         input_path = check_for_xls(input_path)
     input_workbook = load_workbook(input_path)
-    input_worksheet = input_workbook.active
-    return input_worksheet
+    return input_workbook
